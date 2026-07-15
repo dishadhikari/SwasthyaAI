@@ -481,7 +481,10 @@ export default function WorkoutSessionPage() {
   const [phase, setPhase] = useState<"ready" | "exercise" | "rest" | "complete">("ready");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(EXERCISE_DURATION);
-  const [feedback, setFeedback] = useState<{ correct: boolean; message: string }>({ correct: false, message: "Awaiting camera input..." });
+  const [feedback, setFeedback] = useState<{ correct: boolean; message: string }>({ 
+    correct: false, 
+    message: "Awaiting camera input..." 
+  });
   const [error, setError] = useState<string | null>(null);
   const [detector, setDetector] = useState<any>(null);
   const poseRef = useRef<any>(null);
@@ -618,89 +621,574 @@ export default function WorkoutSessionPage() {
   }, []);
 
   return (
-    <main className="p-6">
-      <div className="mb-6 flex flex-col gap-4 rounded-3xl border border-border bg-background p-6 shadow-sm">
-        <div className="flex items-center justify-between gap-4">
+    <div style={styles.container}>
+      {/* Header */}
+      <div style={styles.header}>
+        <div style={styles.headerContent}>
+          <div style={styles.iconWrapper}>
+            <span style={styles.icon}>🏋️</span>
+          </div>
           <div>
-            <p className="text-sm text-muted-foreground">Workout time</p>
-            <h1 className="text-3xl font-semibold">Camera Guided Training</h1>
-            <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-              Complete 15 exercises with live posture feedback, a countdown watch, and short rest intervals between each movement.
+            <h1 style={styles.title}>Camera Guided Training</h1>
+            <p style={styles.subtitle}>
+              Complete 15 exercises with live posture feedback
             </p>
           </div>
-          <button
-            onClick={() => router.push(`/workout`)}
-            className="rounded-lg border border-border bg-background px-4 py-2 text-sm hover:bg-muted"
-          >
-            Back to plans
-          </button>
         </div>
-
-        <div className="grid gap-4 lg:grid-cols-[1.4fr_0.8fr]">
-          <div className="space-y-4">
-            <div className="rounded-3xl border border-border bg-slate-950/5 p-4">
-              <h2 className="text-xl font-semibold">{dayLabel}</h2>
-              <p className="text-sm text-muted-foreground">Exercise {currentIndex + 1} of {exercises.length}</p>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-[1fr_0.7fr]">
-              <div className="rounded-3xl border border-border bg-background p-4">
-                <h3 className="text-2xl font-semibold">{currentExercise.name}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{currentExercise.subtitle}</p>
-                <p className="mt-4 text-sm">{currentExercise.instructions}</p>
-              </div>
-
-              <div className="rounded-3xl border border-border bg-background p-4 text-center">
-                <p className="text-sm text-muted-foreground">{phase === "exercise" ? "Exercise" : phase === "rest" ? "Rest" : "Ready"}</p>
-                <p className="mt-2 text-5xl font-bold">{timeLeft}s</p>
-                <p className="mt-2 text-sm">{phase === "rest" ? `Next: ${exercises[currentIndex + 1]?.name ?? "Done"}` : "Keep moving"}</p>
-              </div>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-[1fr_1fr]">
-              <button
-                onClick={startWorkout}
-                disabled={status === "running" || status === "loading"}
-                className="rounded-3xl bg-primary px-6 py-4 text-sm font-semibold text-white hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {status === "loading" ? "Starting camera..." : status === "running" ? "Workout in progress" : "Start Workout"}
-              </button>
-              <div className="rounded-3xl border border-border bg-background p-4 text-left">
-                <p className="text-sm font-semibold">Feedback</p>
-                <p className={`mt-2 text-sm ${feedback.correct ? "text-emerald-600" : "text-destructive"}`}>{feedback.message}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="overflow-hidden rounded-3xl border border-border bg-black">
-              <div className="relative h-[420px] w-full rounded-3xl bg-black">
-                <video ref={videoRef} className="h-full w-full object-cover" playsInline muted />
-                <canvas ref={canvasRef} className="absolute left-0 top-0 h-full w-full" />
-              </div>
-            </div>
-
-            <div className="rounded-3xl border border-border bg-background p-4">
-              <p className="text-sm text-muted-foreground">Session progress</p>
-              <div className="mt-4 space-y-3">
-                {exercises.map((exercise, index) => (
-                  <div key={exercise.name} className={`flex items-center justify-between rounded-3xl border px-4 py-3 ${index === currentIndex ? "border-primary/50 bg-primary/5" : "border-border bg-background"}`}>
-                    <p className="text-sm font-medium">{exercise.name}</p>
-                    <p className="text-xs text-muted-foreground">{index < currentIndex ? "Done" : index === currentIndex ? phase === "exercise" ? "Now" : phase === "rest" ? "Rest" : "Next" : "Upcoming"}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {error ? <div className="rounded-3xl border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">{error}</div> : null}
-        {status === "done" ? (
-          <div className="rounded-3xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-800">
-            Workout complete! Great job completing the session.
-          </div>
-        ) : null}
+        <button
+          onClick={() => router.push(`/workout`)}
+          style={styles.backButton}
+        >
+          ← Back to plans
+        </button>
       </div>
-    </main>
+
+      {/* Main Grid */}
+      <div style={styles.grid}>
+        {/* Left Column */}
+        <div style={styles.leftColumn}>
+          {/* Day Info */}
+          <div style={styles.dayInfo}>
+            <h2 style={styles.dayTitle}>{dayLabel}</h2>
+            <p style={styles.daySubtitle}>
+              Exercise {currentIndex + 1} of {exercises.length}
+            </p>
+          </div>
+
+          {/* Exercise Info & Timer */}
+          <div style={styles.exerciseGrid}>
+            <div style={styles.exerciseInfo}>
+              <h3 style={styles.exerciseName}>{currentExercise.name}</h3>
+              <p style={styles.exerciseSubtitle}>{currentExercise.subtitle}</p>
+              <p style={styles.exerciseInstructions}>{currentExercise.instructions}</p>
+            </div>
+
+            <div style={styles.timerContainer}>
+              <p style={styles.timerLabel}>
+                {phase === "exercise" ? "Exercise" : phase === "rest" ? "Rest" : "Ready"}
+              </p>
+              <p style={styles.timerValue}>{timeLeft}s</p>
+              <p style={styles.timerNext}>
+                {phase === "rest" 
+                  ? `Next: ${exercises[currentIndex + 1]?.name ?? "Done"}` 
+                  : "Keep moving"}
+              </p>
+            </div>
+          </div>
+
+          {/* Controls & Feedback */}
+          <div style={styles.controlsGrid}>
+            <button
+              onClick={startWorkout}
+              disabled={status === "running" || status === "loading"}
+              style={{
+                ...styles.startButton,
+                ...(status === "running" && styles.startButtonRunning),
+                ...(status === "loading" && styles.startButtonLoading),
+              }}
+              className="start-button"
+            >
+              {status === "loading" 
+                ? "⏳ Starting camera..." 
+                : status === "running" 
+                  ? "⏱️ Workout in progress" 
+                  : "▶️ Start Workout"}
+            </button>
+
+            <div style={styles.feedbackContainer}>
+              <p style={styles.feedbackLabel}>Feedback</p>
+              <p style={{
+                ...styles.feedbackMessage,
+                ...(feedback.correct ? styles.feedbackCorrect : styles.feedbackIncorrect),
+              }}>
+                {feedback.message}
+              </p>
+            </div>
+          </div>
+
+          {error && (
+            <div style={styles.errorContainer}>
+              <span style={styles.errorIcon}>⚠️</span>
+              <p style={styles.errorText}>{error}</p>
+            </div>
+          )}
+
+          {status === "done" && (
+            <div style={styles.completeContainer}>
+              <span style={styles.completeIcon}>🎉</span>
+              <div>
+                <h3 style={styles.completeTitle}>Workout Complete!</h3>
+                <p style={styles.completeText}>Great job completing the session. Keep it up! 💪</p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right Column - Camera */}
+        <div style={styles.rightColumn}>
+          <div style={styles.cameraContainer}>
+            <div style={styles.videoWrapper}>
+              <video 
+                ref={videoRef} 
+                style={styles.video} 
+                playsInline 
+                muted 
+              />
+              <canvas 
+                ref={canvasRef} 
+                style={styles.canvas} 
+              />
+              {status === "idle" && (
+                <div style={styles.cameraPlaceholder}>
+                  <span style={styles.cameraIcon}>📷</span>
+                  <p style={styles.cameraText}>Click "Start Workout" to begin</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Progress List */}
+          <div style={styles.progressContainer}>
+            <p style={styles.progressLabel}>Session Progress</p>
+            <div style={styles.progressList}>
+              {exercises.map((exercise, index) => (
+                <div
+                  key={exercise.name}
+                  style={{
+                    ...styles.progressItem,
+                    ...(index === currentIndex && styles.progressItemActive),
+                    ...(index < currentIndex && styles.progressItemDone),
+                    animationDelay: `${index * 0.05}s`,
+                  }}
+                  className="progress-item"
+                >
+                  <span style={styles.progressName}>{exercise.name}</span>
+                  <span style={styles.progressStatus}>
+                    {index < currentIndex 
+                      ? "✅" 
+                      : index === currentIndex 
+                        ? phase === "exercise" 
+                          ? "▶️" 
+                          : phase === "rest" 
+                            ? "⏸️" 
+                            : "⏳"
+                        : "○"}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <style jsx>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.05); }
+        }
+
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+
+        @keyframes slideIn {
+          from {
+            opacity: 0;
+            transform: translateX(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+
+        @keyframes glow {
+          0%, 100% { box-shadow: 0 0 20px rgba(0,255,0,0.2); }
+          50% { box-shadow: 0 0 40px rgba(0,255,0,0.4); }
+        }
+
+        .start-button {
+          transition: all 0.3s ease;
+        }
+
+        .start-button:hover:not(:disabled) {
+          transform: translateY(-3px);
+          box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        .start-button:active:not(:disabled) {
+          transform: scale(0.97);
+        }
+
+        .progress-item {
+          animation: fadeInUp 0.3s ease-out both;
+          transition: all 0.3s ease;
+        }
+
+        .progress-item:hover {
+          transform: translateX(5px);
+        }
+
+        .timer-value {
+          animation: pulse 2s ease-in-out infinite;
+        }
+
+        .complete-container {
+          animation: glow 1.5s ease-in-out infinite;
+        }
+      `}</style>
+    </div>
   );
 }
+
+const styles = {
+  container: {
+    maxWidth: 1300,
+    margin: "0 auto",
+    padding: "32px 24px",
+    minHeight: "100vh",
+    background: "#fafafa",
+  },
+  header: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 32,
+    paddingBottom: 20,
+    borderBottom: "3px solid #000",
+    flexWrap: "wrap" as const,
+    gap: 16,
+  },
+  headerContent: {
+    display: "flex",
+    alignItems: "center",
+    gap: 16,
+  },
+  iconWrapper: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 56,
+    height: 56,
+    borderRadius: "50%",
+    background: "#000",
+  },
+  icon: {
+    fontSize: "1.8rem",
+    color: "#fff",
+  },
+  title: {
+    fontSize: "2rem",
+    fontWeight: 700,
+    color: "#000",
+    margin: 0,
+    letterSpacing: "-0.02em",
+  },
+  subtitle: {
+    fontSize: "0.95rem",
+    color: "#666",
+    margin: "4px 0 0 0",
+  },
+  backButton: {
+    padding: "10px 20px",
+    border: "2px solid #000",
+    borderRadius: 8,
+    background: "#fff",
+    color: "#000",
+    fontSize: "0.95rem",
+    fontWeight: 500,
+    cursor: "pointer",
+    transition: "all 0.3s ease",
+  },
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "1.4fr 0.9fr",
+    gap: 24,
+  },
+  leftColumn: {
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: 16,
+  },
+  dayInfo: {
+    padding: "20px 24px",
+    border: "2px solid #000",
+    borderRadius: 16,
+    background: "#fff",
+  },
+  dayTitle: {
+    fontSize: "1.5rem",
+    fontWeight: 700,
+    color: "#000",
+    margin: 0,
+  },
+  daySubtitle: {
+    fontSize: "0.9rem",
+    color: "#666",
+    margin: "4px 0 0 0",
+  },
+  exerciseGrid: {
+    display: "grid",
+    gridTemplateColumns: "1fr 0.7fr",
+    gap: 16,
+  },
+  exerciseInfo: {
+    padding: "20px 24px",
+    border: "2px solid #000",
+    borderRadius: 16,
+    background: "#fff",
+  },
+  exerciseName: {
+    fontSize: "1.8rem",
+    fontWeight: 700,
+    color: "#000",
+    margin: "0 0 8px 0",
+  },
+  exerciseSubtitle: {
+    fontSize: "0.95rem",
+    color: "#666",
+    margin: 0,
+  },
+  exerciseInstructions: {
+    fontSize: "0.9rem",
+    color: "#444",
+    margin: "12px 0 0 0",
+    padding: "12px 16px",
+    background: "#f5f5f5",
+    borderRadius: 8,
+    borderLeft: "4px solid #000",
+  },
+  timerContainer: {
+    padding: "20px 24px",
+    border: "2px solid #000",
+    borderRadius: 16,
+    background: "#fff",
+    textAlign: "center" as const,
+    display: "flex",
+    flexDirection: "column" as const,
+    justifyContent: "center",
+  },
+  timerLabel: {
+    fontSize: "0.85rem",
+    color: "#666",
+    margin: 0,
+    fontWeight: 500,
+    textTransform: "uppercase" as const,
+    letterSpacing: "0.5px",
+  },
+  timerValue: {
+    fontSize: "3.5rem",
+    fontWeight: 700,
+    color: "#000",
+    margin: "4px 0",
+  },
+  timerNext: {
+    fontSize: "0.85rem",
+    color: "#888",
+    margin: 0,
+  },
+  controlsGrid: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: 16,
+  },
+  startButton: {
+    padding: "16px 24px",
+    background: "#000",
+    color: "#fff",
+    border: "none",
+    borderRadius: 12,
+    fontSize: "1rem",
+    fontWeight: 600,
+    cursor: "pointer",
+    transition: "all 0.3s ease",
+  },
+  startButtonRunning: {
+    opacity: 0.7,
+    cursor: "not-allowed",
+  },
+  startButtonLoading: {
+    opacity: 0.6,
+    cursor: "not-allowed",
+  },
+  feedbackContainer: {
+    padding: "16px 20px",
+    border: "2px solid #000",
+    borderRadius: 12,
+    background: "#fff",
+    display: "flex",
+    flexDirection: "column" as const,
+    justifyContent: "center",
+  },
+  feedbackLabel: {
+    fontSize: "0.75rem",
+    color: "#666",
+    margin: "0 0 4px 0",
+    textTransform: "uppercase" as const,
+    letterSpacing: "0.5px",
+    fontWeight: 600,
+  },
+  feedbackMessage: {
+    fontSize: "0.95rem",
+    margin: 0,
+    fontWeight: 500,
+  },
+  feedbackCorrect: {
+    color: "#008000",
+  },
+  feedbackIncorrect: {
+    color: "#cc0000",
+  },
+  errorContainer: {
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+    padding: "14px 20px",
+    background: "#fff5f5",
+    border: "1px solid #cc0000",
+    borderRadius: 10,
+  },
+  errorIcon: {
+    fontSize: "1.2rem",
+  },
+  errorText: {
+    fontSize: "0.95rem",
+    color: "#cc0000",
+    margin: 0,
+  },
+  completeContainer: {
+    display: "flex",
+    alignItems: "center",
+    gap: 16,
+    padding: "20px 24px",
+    background: "#f0faf0",
+    border: "2px solid #008000",
+    borderRadius: 12,
+  },
+  completeIcon: {
+    fontSize: "2rem",
+  },
+  completeTitle: {
+    fontSize: "1.2rem",
+    fontWeight: 700,
+    color: "#008000",
+    margin: 0,
+  },
+  completeText: {
+    fontSize: "0.95rem",
+    color: "#333",
+    margin: "4px 0 0 0",
+  },
+  rightColumn: {
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: 16,
+  },
+  cameraContainer: {
+    border: "2px solid #000",
+    borderRadius: 16,
+    overflow: "hidden",
+    background: "#000",
+  },
+  videoWrapper: {
+    position: "relative" as const,
+    paddingTop: "75%",
+    background: "#111",
+  },
+  video: {
+    position: "absolute" as const,
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    objectFit: "cover" as const,
+  },
+  canvas: {
+    position: "absolute" as const,
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+  },
+  cameraPlaceholder: {
+    position: "absolute" as const,
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    display: "flex",
+    flexDirection: "column" as const,
+    alignItems: "center",
+    justifyContent: "center",
+    background: "#1a1a1a",
+    gap: 16,
+  },
+  cameraIcon: {
+    fontSize: "3rem",
+    opacity: 0.5,
+  },
+  cameraText: {
+    color: "#666",
+    fontSize: "0.95rem",
+    margin: 0,
+  },
+  progressContainer: {
+    padding: "20px 24px",
+    border: "2px solid #000",
+    borderRadius: 16,
+    background: "#fff",
+    maxHeight: 300,
+    overflowY: "auto" as const,
+  },
+  progressLabel: {
+    fontSize: "0.85rem",
+    color: "#666",
+    margin: "0 0 16px 0",
+    fontWeight: 600,
+    textTransform: "uppercase" as const,
+    letterSpacing: "0.5px",
+  },
+  progressList: {
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: 8,
+  },
+  progressItem: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "10px 14px",
+    border: "1px solid #e0e0e0",
+    borderRadius: 8,
+    background: "#fff",
+    transition: "all 0.3s ease",
+  },
+  progressItemActive: {
+    borderColor: "#000",
+    background: "#f5f5f5",
+    borderWidth: 2,
+  },
+  progressItemDone: {
+    opacity: 0.6,
+  },
+  progressName: {
+    fontSize: "0.9rem",
+    color: "#333",
+    fontWeight: 500,
+  },
+  progressStatus: {
+    fontSize: "0.9rem",
+  },
+} as const;

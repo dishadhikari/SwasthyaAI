@@ -31,7 +31,8 @@ const userIconOptions = {
   iconAnchor: [12, 41] as [number, number],
   popupAnchor: [1, -34] as [number, number],
   shadowSize: [41, 41] as [number, number],
-}
+};
+
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
   const toRad = (value: number) => (value * Math.PI) / 180;
   const R = 6371;
@@ -225,55 +226,438 @@ export default function NearbyGymsPage() {
   }, [location]);
 
   return (
-    <main className="space-y-6 p-6">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">Nearby Gyms</h1>
-          <p className="text-sm text-muted-foreground">
-            Click the button to allow location access and show the 5 nearest gyms on a free map.
-          </p>
+    <main style={styles.container}>
+      {/* Header Section */}
+      <div style={styles.header}>
+        <div style={styles.headerLeft}>
+          <div style={styles.iconWrapper}>
+            <span style={styles.icon}>📍</span>
+          </div>
+          <div>
+            <h1 style={styles.title}>Nearby Gyms</h1>
+            <p style={styles.subtitle}>
+              Find the 5 nearest gyms from your location
+            </p>
+          </div>
         </div>
-        <Link href="/" className="rounded-lg border border-border bg-background px-4 py-2 text-sm hover:bg-muted">
-          Back to home
+        <Link href="/" style={styles.backButton}>
+          ← Back to home
         </Link>
       </div>
 
+      {/* Action Button */}
       <button
-        className="rounded-lg bg-primary px-4 py-2 text-white hover:bg-primary/90"
+        style={{
+          ...styles.findButton,
+          ...(loading && styles.findButtonLoading),
+        }}
         onClick={handleRequestLocation}
         type="button"
+        disabled={loading}
+        className="find-button"
       >
-        {loading ? "Loading location…" : "Find nearby gyms"}
+        {loading ? (
+          <>
+            <span style={styles.spinner}></span>
+            Loading location...
+          </>
+        ) : (
+          "🔍 Find nearby gyms"
+        )}
       </button>
 
-      {error ? <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-destructive">{error}</div> : null}
+      {/* Error Display */}
+      {error && (
+        <div style={styles.errorContainer} className="slide-down">
+          <span style={styles.errorIcon}>⚠️</span>
+          <p style={styles.errorText}>{error}</p>
+        </div>
+      )}
 
-      <div className="grid gap-6 lg:grid-cols-[1.5fr_0.9fr]">
-        <div className="h-[520px] min-h-[420px] rounded-lg border border-border" ref={mapContainerRef} />
+      {/* Main Grid */}
+      <div style={styles.grid}>
+        {/* Map Container */}
+        <div style={styles.mapWrapper}>
+          <div style={styles.mapContainer} ref={mapContainerRef}>
+            {!location && !loading && (
+              <div style={styles.mapPlaceholder}>
+                <span style={styles.mapPlaceholderIcon}>🗺️</span>
+                <p style={styles.mapPlaceholderText}>
+                  Click "Find nearby gyms" to see gyms on the map
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
 
-        <div className="space-y-4 rounded-lg border border-border bg-background p-4">
-          <h2 className="text-xl font-semibold">Nearest gyms</h2>
+        {/* Gym List */}
+        <div style={styles.gymList}>
+          <h2 style={styles.gymListTitle}>
+            Nearest Gyms
+            {location && gyms.length > 0 && (
+              <span style={styles.gymCount}>({gyms.length})</span>
+            )}
+          </h2>
+
           {location ? (
             gyms.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No gyms found yet. Click the button above to load nearby gyms.</p>
+              <div style={styles.emptyState}>
+                <p style={styles.emptyStateText}>No gyms found nearby</p>
+              </div>
             ) : (
-              <ul className="space-y-4">
-                {gyms.map((gym) => (
-                  <li key={gym.id} className="rounded-lg border border-muted/30 p-3">
-                    <h3 className="font-semibold">{gym.name}</h3>
-                    <p className="text-sm text-muted-foreground">{gym.address}</p>
-                    <p className="text-sm">{gym.distance.toFixed(1)} km away</p>
+              <ul style={styles.gymListItems}>
+                {gyms.map((gym, index) => (
+                  <li
+                    key={gym.id}
+                    style={{
+                      ...styles.gymItem,
+                      animationDelay: `${index * 0.1}s`,
+                    }}
+                    className="gym-item"
+                  >
+                    <div style={styles.gymRank}>{index + 1}</div>
+                    <div style={styles.gymInfo}>
+                      <h3 style={styles.gymName}>{gym.name}</h3>
+                      <p style={styles.gymAddress}>{gym.address}</p>
+                      <div style={styles.gymDistance}>
+                        <span style={styles.distanceIcon}>📏</span>
+                        <span>{gym.distance.toFixed(1)} km away</span>
+                      </div>
+                    </div>
                   </li>
                 ))}
               </ul>
             )
           ) : (
-            <div className="rounded-lg border border-border bg-background p-6 text-sm text-muted-foreground">
-              Tap "Find nearby gyms" to allow location access and show gyms on the map.
+            <div style={styles.placeholder}>
+              <span style={styles.placeholderIcon}>🏋️</span>
+              <p style={styles.placeholderText}>
+                Allow location access to find nearby gyms
+              </p>
             </div>
           )}
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.02); }
+        }
+
+        .slide-down {
+          animation: slideDown 0.4s ease-out;
+        }
+
+        .gym-item {
+          animation: fadeInUp 0.5s ease-out both;
+          transition: all 0.3s ease;
+        }
+
+        .gym-item:hover {
+          transform: translateX(8px);
+          background: #f5f5f5;
+        }
+
+        .find-button {
+          transition: all 0.3s ease;
+        }
+
+        .find-button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .find-button:active {
+          transform: scale(0.98);
+        }
+
+        .find-button:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
+        }
+      `}</style>
     </main>
   );
 }
+
+const styles = {
+  container: {
+    maxWidth: 1200,
+    margin: "0 auto",
+    padding: "32px 24px",
+    minHeight: "100vh",
+    background: "#fafafa",
+  },
+  header: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 32,
+    paddingBottom: 20,
+    borderBottom: "2px solid #000",
+    flexWrap: "wrap" as const,
+    gap: 16,
+  },
+  headerLeft: {
+    display: "flex",
+    alignItems: "center",
+    gap: 16,
+  },
+  iconWrapper: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 48,
+    height: 48,
+    borderRadius: "50%",
+    background: "#000",
+    fontSize: 24,
+  },
+  icon: {
+    color: "#fff",
+  },
+  title: {
+    fontSize: "2.2rem",
+    fontWeight: 700,
+    color: "#000",
+    margin: 0,
+    letterSpacing: "-0.02em",
+  },
+  subtitle: {
+    fontSize: "0.95rem",
+    color: "#666",
+    margin: "4px 0 0 0",
+  },
+  backButton: {
+    padding: "10px 20px",
+    border: "2px solid #000",
+    borderRadius: 8,
+    background: "#fff",
+    color: "#000",
+    textDecoration: "none",
+    fontSize: "0.95rem",
+    fontWeight: 500,
+    transition: "all 0.3s ease",
+    display: "inline-block",
+  },
+  findButton: {
+    padding: "14px 32px",
+    background: "#000",
+    color: "#fff",
+    border: "none",
+    borderRadius: 10,
+    fontSize: "1rem",
+    fontWeight: 600,
+    cursor: "pointer",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 24,
+    transition: "all 0.3s ease",
+    minHeight: 52,
+  },
+  findButtonLoading: {
+    opacity: 0.7,
+    cursor: "not-allowed",
+  },
+  spinner: {
+    width: 20,
+    height: 20,
+    border: "2px solid #fff",
+    borderTop: "2px solid transparent",
+    borderRadius: "50%",
+    animation: "spin 0.8s linear infinite",
+    display: "inline-block",
+  },
+  errorContainer: {
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+    padding: "14px 20px",
+    background: "#fff5f5",
+    border: "1px solid #cc0000",
+    borderRadius: 10,
+    marginBottom: 24,
+  },
+  errorIcon: {
+    fontSize: "1.2rem",
+  },
+  errorText: {
+    fontSize: "0.95rem",
+    color: "#cc0000",
+    margin: 0,
+  },
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "1.5fr 0.9fr",
+    gap: 24,
+    marginTop: 8,
+  },
+  mapWrapper: {
+    position: "relative" as const,
+  },
+  mapContainer: {
+    height: "520px",
+    minHeight: "420px",
+    border: "2px solid #000",
+    borderRadius: 12,
+    background: "#f0f0f0",
+    position: "relative" as const,
+    overflow: "hidden",
+  },
+  mapPlaceholder: {
+    display: "flex",
+    flexDirection: "column" as const,
+    alignItems: "center",
+    justifyContent: "center",
+    height: "100%",
+    gap: 16,
+    color: "#999",
+  },
+  mapPlaceholderIcon: {
+    fontSize: "3rem",
+  },
+  mapPlaceholderText: {
+    fontSize: "0.95rem",
+    margin: 0,
+    textAlign: "center" as const,
+    maxWidth: 250,
+  },
+  gymList: {
+    border: "2px solid #000",
+    borderRadius: 12,
+    padding: 24,
+    background: "#fff",
+    display: "flex",
+    flexDirection: "column" as const,
+  },
+  gymListTitle: {
+    fontSize: "1.5rem",
+    fontWeight: 700,
+    color: "#000",
+    margin: "0 0 20px 0",
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+  },
+  gymCount: {
+    fontSize: "0.9rem",
+    fontWeight: 400,
+    color: "#666",
+    marginLeft: "auto",
+  },
+  gymListItems: {
+    listStyle: "none",
+    padding: 0,
+    margin: 0,
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: 12,
+    flex: 1,
+  },
+  gymItem: {
+    display: "flex",
+    alignItems: "center",
+    gap: 16,
+    padding: "14px 16px",
+    border: "1px solid #e0e0e0",
+    borderRadius: 8,
+    background: "#fff",
+    transition: "all 0.3s ease",
+  },
+  gymRank: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 32,
+    height: 32,
+    borderRadius: "50%",
+    background: "#000",
+    color: "#fff",
+    fontSize: "0.8rem",
+    fontWeight: 700,
+    flexShrink: 0,
+  },
+  gymInfo: {
+    flex: 1,
+  },
+  gymName: {
+    fontSize: "1rem",
+    fontWeight: 600,
+    color: "#000",
+    margin: "0 0 4px 0",
+  },
+  gymAddress: {
+    fontSize: "0.85rem",
+    color: "#666",
+    margin: "0 0 6px 0",
+  },
+  gymDistance: {
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
+    fontSize: "0.85rem",
+    color: "#000",
+    fontWeight: 500,
+  },
+  distanceIcon: {
+    fontSize: "0.9rem",
+  },
+  placeholder: {
+    display: "flex",
+    flexDirection: "column" as const,
+    alignItems: "center",
+    justifyContent: "center",
+    flex: 1,
+    gap: 12,
+    color: "#999",
+    padding: "40px 20px",
+  },
+  placeholderIcon: {
+    fontSize: "2.5rem",
+  },
+  placeholderText: {
+    fontSize: "0.95rem",
+    margin: 0,
+    textAlign: "center" as const,
+  },
+  emptyState: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flex: 1,
+    color: "#999",
+    fontSize: "0.95rem",
+  },
+  emptyStateText: {
+    margin: 0,
+  },
+} as const;
