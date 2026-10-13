@@ -6,7 +6,7 @@ Powered by **Generative AI**, **Large Language Models**, **Web APIs**, and **Aut
 
 Built by team **Teamers** for Soveriegn Technology of India, Ideas for India, 2026
 
-💻 **GitHub Repository:** [[Add Repository Link](https://github.com/dishadhikari/SwasthyaA)]
+💻 **GitHub Repository:** [https://github.com/dishadhikari/SwasthyaAI(https://github.com/dishadhikari/SwasthyaA)]
 
 ---
 
