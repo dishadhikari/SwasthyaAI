@@ -4,7 +4,7 @@
 
 Powered by **Generative AI**, **Large Language Models**, **Web APIs**, and **Automation**, SwasthyaAI transforms traditional workout planning into an intelligent, personalized, and accessible fitness experience.
 
-Built by team **Teamers** for OSDHack 2026
+Built by team **Teamers** for Soveriegn Technology of India, Ideas for India, 2026
 
 💻 **GitHub Repository:** [[Add Repository Link](https://github.com/dishadhikari/SwasthyaA)]
 
@@ -789,3 +789,4 @@ git push origin feature-name
 Built by-
 - **Disha Adhikari**
 - **Akshat Porwal**
+- **Bhavishya Maheshwari**
